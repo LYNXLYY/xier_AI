@@ -112,23 +112,7 @@ def get_model():
     model = Net()
     return model, optim.Adam(model.parameters(), lr=0.001)
 
-
-# 热值化处理
-def one_hot(label, depth=10):
-    out = torch.zeros(label.size(0), depth)
-    idx = torch.LongTensor(label).view(-1, 1)
-    out.scatter_(dim=1, index=idx, value=1)
-    return out
-
-
-# 画图
-def plot_curve(data):
-    fig = plt.figure()
-    plt.plot(range(len(data)), data, color="blue")
-    plt.legend(["value"], loc="upper right")
-    plt.xlabel("step")
-    plt.ylabel("value")
-    plt.show()
+criterion = nn.CrossEntropyLoss()  # 交叉熵损失函数
 
 
 def fit(epoch, model, opt, train_loader):
@@ -136,8 +120,7 @@ def fit(epoch, model, opt, train_loader):
     for step in range(epoch):
         for batch_idx, (x, y) in enumerate(train_loader):
             out = model(x)
-            y_onehot = one_hot(y)
-            loss = F.mse_loss(out, y_onehot)
+            loss = criterion(out, y)
             opt.zero_grad()
             loss.backward()
             opt.step()
@@ -145,11 +128,11 @@ def fit(epoch, model, opt, train_loader):
 
             if batch_idx % 100 == 0:
                 print(step, batch_idx, loss.item())
-    plot_curve(train_loss)
+
 
 
 model, opt = get_model()
-fit(3, model, opt, train_loader)
+fit(1, model, opt, train_loader)
 
 # 测试
 def test_right(test_loader):
